@@ -38,6 +38,7 @@ var svg = d3.select(visContainer).append("svg")
   .attr("width", width)
   .attr("height", height);
 
+//http://bl.ocks.org/mbostock/3184089
 var partition = d3.layout.partition()
   .size([height,width])
   .value(function(d) { return 1; });
@@ -53,7 +54,7 @@ ED.addEventListener('editor_change', (event) => {
 		
 		dom.forEach( (el) => {
 			if(el.type === 'tag') {
-				let child = { type: el.type, children: [] }
+				let child = { type: el.type, name: el.name, children: [] }
 				root.children.push(child);
 				traverse(el.children, child);
 			}
@@ -75,7 +76,7 @@ ED.addEventListener('editor_change', (event) => {
 			nodes.forEach( (node) => {
 				let type = node.type;
 				if(type === 'tag') {
-					var child = { type: node.type, children: [] }
+					var child = { type: node.type, name: node.name, children: [] }
 					parent.children.push(child)
 
 					traverse(node.children, child)
