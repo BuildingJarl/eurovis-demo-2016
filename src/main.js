@@ -31,31 +31,59 @@ child.parentNode.removeChild(child);
 // ----------------------------------------------------
 //     D3 VIS
 
-// ----------------------------------------------------
+var width = visContainer.clientWidth
+var height = visContainer.clientHeight
 
 var svg = d3.select(visContainer).append("svg")
-  .attr("width", visContainer.clientWidth)
-  .attr("height", visContainer.clientHeight);
+  .attr("width", width)
+  .attr("height", height);
 
 var partition = d3.layout.partition()
-  .size([visContainer.clientWidth, visContainer.clientHeight])
-  .value(function(d) { return d.size; });
+  .size([height,width])
+  .value(function(d) { return 1; });
+
+var color = d3.scale.category20();
 
 ED.addEventListener('editor_change', (event) => {
 	//console.log(event)
-	var handler = new htmlparser.DomHandler( function (error, dom) {
-		console.log('parsing ...');
+	parse(event.payload).then( (dom) => {
+		svg.selectAll("*").remove();
 
-		if (error)
-			console.log(error)
-		else
-			console.log(dom);
-	}, {withStartIndices:true});
-	
-	var parser = new htmlparser.Parser(handler, {recognizeSelfClosing: true, decodeEntities: true});
-	
-	parser.write(event.payload);
-	parser.done();
+		var root = { type: 'root', children: [] };
+		
+		dom.forEach( (el) => {
+			if(el.type === 'tag') {
+				let child = { type: el.type, children: [] }
+				root.children.push(child);
+				traverse(el.children, child);
+			}
+		})
+
+		var nodes = partition.nodes(root);
+
+		svg.selectAll(".node")
+      .data(nodes)
+    .enter().append("rect")
+      .attr("class", "node")
+      .attr("x", function(d) { return d.y; })
+      .attr("y", function(d) { return d.x; })
+      .attr("width", function(d) { return d.dy; })
+      .attr("height", function(d) { return d.dx; })
+      .style("fill", function(d) { return color((d.children ? d : d.parent).name); });
+
+		function traverse(nodes,parent) {
+			nodes.forEach( (node) => {
+				let type = node.type;
+				if(type === 'tag') {
+					var child = { type: node.type, children: [] }
+					parent.children.push(child)
+
+					traverse(node.children, child)
+				}
+			})
+		}
+	})
+
 })
 
 // ----------------------------------------------------
@@ -77,3 +105,29 @@ editor.on('change', (change,target)=> {
 	ED.dispatchEvent( {type:'editor_change', payload: content} )
 })
 // ----------------------------------------------------
+
+
+
+// ----------------------------------------------------
+//     Parser Wrapper
+function parse(payload) {
+	
+	var promise = new Promise( function(resolve, reject) {
+		var handler = new htmlparser.DomHandler( function (error, dom) {
+			console.log('parsing ...');
+
+			if (error)
+				console.log(error);
+				//reject(err);
+			else
+				resolve(dom);
+		}, {withStartIndices:true});
+
+		var parser = new htmlparser.Parser(handler, {recognizeSelfClosing: true, decodeEntities: true});
+
+		parser.write(payload);
+		parser.done();
+	});
+
+	return promise;
+}

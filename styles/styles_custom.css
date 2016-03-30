@@ -22,3 +22,8 @@
 	right: 0px;
 	left: 300px;
 }
+
+.node {
+  fill: #ddd;
+  stroke: #fff;
+}
