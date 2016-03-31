@@ -38,31 +38,37 @@ var svg = d3.select(visContainer).append("svg")
   .attr("width", width)
   .attr("height", height);
 
-//http://bl.ocks.org/mbostock/3184089
-var partition = d3.layout.partition()
-  .size([height,width])
-  .value(function(d) { return 1; });
+var visGroup = svg.append("g");
 
 var color = d3.scale.category20();
 
 ED.addEventListener('editor_change', (event) => {
 	//console.log(event)
 	parse(event.payload).then( (dom) => {
-		svg.selectAll("*").remove();
+		visGroup.selectAll("*").remove();
 
-		var root = { type: 'root', children: [] };
-		
+		var root = { type: 'tag', name: 'html', children: [] };
+
 		dom.forEach( (el) => {
 			if(el.type === 'tag') {
 				let child = { type: el.type, name: el.name, children: [] }
 				root.children.push(child);
 				traverse(el.children, child);
 			}
-		})
+		});
+
+		//http://bl.ocks.org/mbostock/3184089
+		var partition = d3.layout.partition()
+  		.size([height,width+100]) //this has to be width + width/maxNestingLevel
+  		.value(function(d) { return 1; });
 
 		var nodes = partition.nodes(root);
+		var oldRoot = nodes[0];
+		var newNodes = nodes.slice(1);
 
-		svg.selectAll(".node")
+		//visGroup.attr("transform", "translate("+ -oldRoot.dy +",0)");
+		
+		visGroup.selectAll(".node")
       .data(nodes)
     .enter().append("rect")
       .attr("class", "node")
@@ -72,13 +78,19 @@ ED.addEventListener('editor_change', (event) => {
       .attr("height", function(d) { return d.dx; })
       .style("fill", function(d) { return color((d.children ? d : d.parent).name); });
 
+      /*
+      setTimeout(function() {
+      	visGroup.transition().attr("transform","scale(1.2,1)");
+      	visGroup.attr("transform", "translate("+ -oldRoot.dy +",0)");
+      },2000)
+      */
+
 		function traverse(nodes,parent) {
 			nodes.forEach( (node) => {
 				let type = node.type;
 				if(type === 'tag') {
 					var child = { type: node.type, name: node.name, children: [] }
 					parent.children.push(child)
-
 					traverse(node.children, child)
 				}
 			})
