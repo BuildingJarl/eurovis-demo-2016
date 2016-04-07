@@ -3,6 +3,9 @@ import ace from 'ace';
 import htmlparser from 'htmlparser2';
 import ED from './eventdispatcher';
 
+//D3 tree orientation
+//http://bl.ocks.org/mbostock/3184089
+
 // settings for ace
 let base = System.normalizeSync('ace');
 base = base.substr(0, base.length - 3);
@@ -40,64 +43,78 @@ var svg = d3.select(visContainer).append("svg")
 
 var visGroup = svg.append("g");
 
-var color = d3.scale.category20();
-
 ED.addEventListener('editor_change', (event) => {
-	//console.log(event)
+
 	parse(event.payload).then( (dom) => {
+
 		visGroup.selectAll("*").remove();
-
-		var root = { type: 'tag', name: 'html', children: [] };
-
-		dom.forEach( (el) => {
-			if(el.type === 'tag') {
-				let child = { type: el.type, name: el.name, children: [] }
-				root.children.push(child);
-				traverse(el.children, child);
-			}
-		});
-
-		//http://bl.ocks.org/mbostock/3184089
-		var partition = d3.layout.partition()
-  		.size([height,width+100]) //this has to be width + width/maxNestingLevel
-  		.value(function(d) { return 1; });
-
-		var nodes = partition.nodes(root);
-		var oldRoot = nodes[0];
-		var newNodes = nodes.slice(1);
-
-		//visGroup.attr("transform", "translate("+ -oldRoot.dy +",0)");
 		
-		visGroup.selectAll(".node")
-      .data(nodes)
-    .enter().append("rect")
-      .attr("class", "node")
-      .attr("x", function(d) { return d.y; })
-      .attr("y", function(d) { return d.x; })
-      .attr("width", function(d) { return d.dy; })
-      .attr("height", function(d) { return d.dx; })
-      .style("fill", function(d) { return color((d.children ? d : d.parent).name); });
+		if(dom.length >= 1) {
+			var root = { type: 'tag', name: 'html', children: dom };
 
-      /*
-      setTimeout(function() {
-      	visGroup.transition().attr("transform","scale(1.2,1)");
-      	visGroup.attr("transform", "translate("+ -oldRoot.dy +",0)");
-      },2000)
-      */
+			var level = heightHeighy(root);
+			
+			if(level > 0) {
+			
+				//this has to be width + width/maxNestingLevel
+				var widthNew = visContainer.clientWidth + visContainer.clientWidth/level;
+				var partition = d3.layout.partition()
+		  		.size([height,widthNew])
+		  		.value(function(d) { return 1; })
+		  		.children(function(d){
+		  				if(d.children) {
+		  					return d.children.filter(function(o){
+			  					if(o.type === 'tag') {
+			  						return true;
+			  					} else {
+			  						return false;
+			  					}
+			  				});
+		  				}
+		  		})
+		  		.sort(null);
 
-		function traverse(nodes,parent) {
-			nodes.forEach( (node) => {
-				let type = node.type;
-				if(type === 'tag') {
-					var child = { type: node.type, name: node.name, children: [] }
-					parent.children.push(child)
-					traverse(node.children, child)
-				}
-			})
-		}
-	})
+				var nodes = partition.nodes(root);
+				visGroup.attr("transform", "translate("+ -(nodes[0].dy+1)+",0)");
 
-})
+				visGroup.selectAll(".node")
+		      .data(nodes)
+		    .enter().append("rect")
+		      .attr("class", "node")
+		      .attr("x", function(d) { return d.y; })
+		      .attr("y", function(d) { return d.x; })
+		      .attr("width", function(d) { return d.dy; })
+		      .attr("height", function(d) { return d.dx; })
+		      .style("fill", function(d) {
+		      	if(d.type === 'tag') {
+		      		return 'blue';
+		      	} else {
+		      		return 'yellow';
+		      	}
+		      });
+	    	}
+
+		} 
+	});
+});
+
+
+
+function heightHeighy(el) {
+    if (!el.children)
+        return 0;
+    var max = -1;
+    
+    for ( var i = 0; i < el.children.length; i++) {
+      if(el.children[i].type !== 'text') {
+        var h = heightHeighy(el.children[i]);
+        if (h > max) {
+            max = h;
+        }
+       }
+    }
+    return max + 1;
+}
 
 // ----------------------------------------------------
 //     ACE EDITOR
