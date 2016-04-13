@@ -3,6 +3,8 @@ import ace from 'ace';
 import htmlparser from 'htmlparser2';
 import ED from './eventdispatcher';
 
+var Range = ace.require('ace/range').Range;
+
 //D3 tree orientation
 //http://bl.ocks.org/mbostock/3184089
 
@@ -36,6 +38,7 @@ child.parentNode.removeChild(child);
 
 var width = visContainer.clientWidth
 var height = visContainer.clientHeight
+var selectedNode =  null;
 
 var svg = d3.select(visContainer).append("svg")
   .attr("width", width)
@@ -47,10 +50,11 @@ ED.addEventListener('editor_change', (event) => {
 
 	parse(event.payload).then( (dom) => {
 
+		selectedNode = null;
 		visGroup.selectAll("*").remove();
 		
 		if(dom.length >= 1) {
-			var root = { type: 'tag', name: 'html', children: dom };
+			var root = { type: 'root', name: 'html', children: dom };
 
 			var level = heightHeighy(root);
 			
@@ -78,26 +82,76 @@ ED.addEventListener('editor_change', (event) => {
 				visGroup.attr("transform", "translate("+ -(nodes[0].dy+1)+",0)");
 
 				visGroup.selectAll(".node")
-		      .data(nodes)
-		    .enter().append("rect")
-		      .attr("class", "node")
-		      .attr("x", function(d) { return d.y; })
-		      .attr("y", function(d) { return d.x; })
-		      .attr("width", function(d) { return d.dy; })
-		      .attr("height", function(d) { return d.dx; })
-		      .style("fill", function(d) {
-		      	if(d.type === 'tag') {
-		      		return 'blue';
-		      	} else {
-		      		return 'yellow';
-		      	}
-		      });
+		      		.data(nodes)
+		    		.enter().append("rect")
+		      		.attr("class", "node")
+			      	.attr("x", function(d) { return d.y; })
+			     	.attr("y", function(d) { return d.x; })
+			      	.attr("width", function(d) { return d.dy; })
+			      	.attr("height", function(d) { return d.dx; })
+			      	.style("fill", function(d) {
+			      		if(d.type === 'tag') {
+			      			return 'blue';
+			      		} else {
+			      			return 'yellow';
+			      		}
+			      	});
 	    	}
-
 		} 
 	});
 });
 
+ED.addEventListener('editor_cursor_change', (event) => {
+	
+	if(selectedNode) {
+		d3.select(selectedNode).style("fill","blue");
+	}	
+
+	var cursorPosition = event.payload;
+
+	var r = new Range(0,0,cursorPosition.row,cursorPosition.column)
+	var content = editor.session.getTextRange(r);
+	var newCursorPos = content.length;
+
+	visGroup.selectAll(".node").each( function(d) {
+		console.log(d)
+		if(d.type !== 'root') {
+			var start = d.startIndex;
+			var end = d.endIndex;
+			
+			if(start <= newCursorPos) {
+				if(end >= newCursorPos) {
+					console.log('ddddd')
+					d3.select(this).style("fill","green");
+					selectedNode = this;
+				}
+			}
+			
+		}
+	});
+
+	/*
+	nodes.slice(1).forEach( function(node){
+		var start = node.startIndex;
+		var end = node.endIndex;
+		console.log(start + ' - ' + end);
+		
+		if(start < newCursorPos) {
+			if(end > newCursorPos) {
+
+				if(selectedNode) {
+					d3.select(selectedNode)
+						.style("fill","blue");
+				}
+				console.log('ddddd')
+				node.style("fill","green");
+				console.log(node)
+				selectedNode = node;
+			}
+		}
+	})
+	*/
+});
 
 
 function heightHeighy(el) {
@@ -134,6 +188,13 @@ editor.on('change', (change,target)=> {
 	var content = editor.getValue();
 	ED.dispatchEvent( {type:'editor_change', payload: content} )
 })
+
+editor.selection.on('changeCursor', (event)=> {
+	//console.log(event)
+	let position = editor.selection.getCursor();
+	console.log(position) //Object {row: 9, column: 7}
+	ED.dispatchEvent( {type:'editor_cursor_change', payload: position} )
+});
 // ----------------------------------------------------
 
 
@@ -151,7 +212,7 @@ function parse(payload) {
 				//reject(err);
 			else
 				resolve(dom);
-		}, {withStartIndices:true});
+		}, {withStartIndices:true, withEndIndices:true});
 
 		var parser = new htmlparser.Parser(handler, {recognizeSelfClosing: true, decodeEntities: true});
 
