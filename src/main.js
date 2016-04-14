@@ -49,7 +49,6 @@ var visGroup = svg.append("g");
 ED.addEventListener('editor_change', (event) => {
 
 	parse(event.payload).then( (dom) => {
-
 		selectedNode = null;
 		visGroup.selectAll("*").remove();
 		
@@ -61,7 +60,7 @@ ED.addEventListener('editor_change', (event) => {
 			if(level > 0) {
 			
 				//this has to be width + width/maxNestingLevel
-				var widthNew = visContainer.clientWidth + visContainer.clientWidth/level;
+				var widthNew = (visContainer.clientWidth + visContainer.clientWidth/level);
 				var partition = d3.layout.partition()
 		  		.size([height,widthNew])
 		  		.value(function(d) { return 1; })
@@ -79,7 +78,7 @@ ED.addEventListener('editor_change', (event) => {
 		  		.sort(null);
 
 				var nodes = partition.nodes(root);
-				visGroup.attr("transform", "translate("+ -(nodes[0].dy+1)+",0)");
+				visGroup.attr("transform", "translate("+ -(nodes[0].dy)+",0)");
 
 				visGroup.selectAll(".node")
 		      		.data(nodes)
@@ -98,31 +97,36 @@ ED.addEventListener('editor_change', (event) => {
 			      	});
 	    	}
 		} 
+		ED.dispatchEvent( {type:'editor_change_async_end'} );
 	});
 });
 
 ED.addEventListener('editor_cursor_change', (event) => {
-	
+
+	//this method might be abit inefficient as it gets called multiple times
+
 	if(selectedNode) {
-		d3.select(selectedNode).style("fill","blue");
+		d3.select(selectedNode)
+			.transition()
+			.duration(250)
+			.style("fill","blue");
+
+		selectedNode = null;
 	}	
 
 	var cursorPosition = event.payload;
 
-	var r = new Range(0,0,cursorPosition.row,cursorPosition.column)
+	var r = new Range(0, 0, cursorPosition.row, cursorPosition.column);
 	var content = editor.session.getTextRange(r);
 	var newCursorPos = content.length;
 
 	visGroup.selectAll(".node").each( function(d) {
-		console.log(d)
 		if(d.type !== 'root') {
-			var start = d.startIndex;
+			var start = d.startIndex + 1;
 			var end = d.endIndex;
 			
 			if(start <= newCursorPos) {
-				if(end >= newCursorPos) {
-					console.log('ddddd')
-					d3.select(this).style("fill","green");
+				if(end >= newCursorPos) {				
 					selectedNode = this;
 				}
 			}
@@ -130,27 +134,12 @@ ED.addEventListener('editor_cursor_change', (event) => {
 		}
 	});
 
-	/*
-	nodes.slice(1).forEach( function(node){
-		var start = node.startIndex;
-		var end = node.endIndex;
-		console.log(start + ' - ' + end);
-		
-		if(start < newCursorPos) {
-			if(end > newCursorPos) {
-
-				if(selectedNode) {
-					d3.select(selectedNode)
-						.style("fill","blue");
-				}
-				console.log('ddddd')
-				node.style("fill","green");
-				console.log(node)
-				selectedNode = node;
-			}
-		}
-	})
-	*/
+	if(selectedNode) {
+		d3.select(selectedNode)
+			.transition()
+			.duration(250)
+			.style("fill","green");;
+	}
 });
 
 
@@ -183,17 +172,25 @@ editor.setOptions({
 		wrap: true
 	});
 
-editor.on('change', (change,target)=> {
-	//console.log(change)
-	var content = editor.getValue();
-	ED.dispatchEvent( {type:'editor_change', payload: content} )
-})
+ED.addEventListener('editor_change_async_end', (event) => {
+	ED.dispatchEvent( {type:'editor_cursor_change', payload: editor.selection.getCursor()} );
+});
+
+editor.on('change', (change,target)=> {	
+	ED.dispatchEvent( {type:'editor_change', payload: editor.getValue()} );
+	//ED.dispatchEvent( {type:'editor_cursor_change', payload: editor.selection.getCursor()} );
+});
+
+editor.on("copy", function() {
+	console.log('copy');
+});
+
+editor.on("paste", function() {
+	console.log('paste');
+});
 
 editor.selection.on('changeCursor', (event)=> {
-	//console.log(event)
-	let position = editor.selection.getCursor();
-	console.log(position) //Object {row: 9, column: 7}
-	ED.dispatchEvent( {type:'editor_cursor_change', payload: position} )
+	ED.dispatchEvent( {type:'editor_cursor_change', payload: editor.selection.getCursor()} );
 });
 // ----------------------------------------------------
 
@@ -205,7 +202,7 @@ function parse(payload) {
 	
 	var promise = new Promise( function(resolve, reject) {
 		var handler = new htmlparser.DomHandler( function (error, dom) {
-			console.log('parsing ...');
+			//console.log('parsing ...');
 
 			if (error)
 				console.log(error);
