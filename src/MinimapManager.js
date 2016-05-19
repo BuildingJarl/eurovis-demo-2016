@@ -68,7 +68,16 @@ export default class MinimapManager {
 				d3.select(selectedNode)
 					.transition()
 					.duration(250)
-					.style("fill","#d32661");;
+					.style("fill","#d32661");
+
+				var payload = {
+					start: d3.select(selectedNode).datum().startIndex,
+					end: d3.select(selectedNode).datum().endIndex
+				};
+
+				EventDispatcher.dispatchEvent( {type:'gutter_highlight', payload: payload });
+			} else {
+				EventDispatcher.dispatchEvent( {type:'gutter_highlight_reset'});
 			}
 		});
 	}

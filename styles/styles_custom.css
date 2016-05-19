@@ -29,3 +29,8 @@
   stroke: #fff;
   stroke-width: 1;
 }
+
+.editor-gutter-highlight {
+	background-color: rgba(247, 15, 94, 0.9);
+	color: white;
+}

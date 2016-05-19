@@ -82,6 +82,53 @@ export default class EditorManager {
 			this.editor.gotoLine(rowCount, columCount);
 		});
 
+		EventDispatcher.addEventListener('gutter_highlight', (event) => {
+			var startPos = event.payload.start;
+			var endPos = event.payload.end;
+			
+			function bla(startPos, rows) {
+				var rowCount = -1;
+				var columCount = 0;
+				var stopPos = -1;
+
+				//we need to iteratate through all rows
+				rows.some( (line) => {
+	 
+					if(stopPos < startPos) {
+						rowCount++;
+						stopPos++;
+						//we need to iterate through line string
+						//reset columCount
+						columCount = 0;
+						line.split('').some( (char) => {
+
+							if(stopPos < startPos) {
+								columCount ++;
+								stopPos ++;
+							} else {
+								return true;
+							}
+						});
+
+					} else {
+						return true;
+					}
+
+				});
+				//ace editor start row count at 1 -> so we need to add 1
+				return rowCount;
+			}
+
+			var startRow = bla(startPos, this.editor.getValue().split('\n'));
+			var endRow = bla(endPos, this.editor.getValue().split('\n'));
+			
+			this.highlightCorrispondingGutterLines({start: startRow, end: endRow});
+		});
+
+		EventDispatcher.addEventListener('gutter_highlight_reset', (event) => {
+			this.gutter_highlight_reset();
+		});
+		
 		this.editor.on('change', (change,target)=> {	
 			log.debug('Editor event: change');
 
@@ -99,6 +146,30 @@ export default class EditorManager {
 
 			EventDispatcher.dispatchEvent( {type:'editor_cursor_change', payload: newCursorPos} );
 		});
+	}
+
+	highlightCorrispondingGutterLines(r) {
+
+		var rows = this.editor.session.getLength();
+
+		for ( let i = 0; i < rows; i++) { 
+
+			if(i >= r.start && i <= r.end) {
+				//this has to be here since it will keep adding the same class
+				this.editor.getSession().removeGutterDecoration( i, 'editor-gutter-highlight' );
+				this.editor.getSession().addGutterDecoration( i, 'editor-gutter-highlight' );
+			} else {
+				this.editor.getSession().removeGutterDecoration( i, 'editor-gutter-highlight' );
+			}
+		}
+	}
+
+	gutter_highlight_reset() {
+		var rows = this.editor.session.getLength();
+
+		for ( let i = 0; i < rows; i++) { 
+			this.editor.getSession().removeGutterDecoration( i, 'editor-gutter-highlight' );
+		}
 	}
 }
 
