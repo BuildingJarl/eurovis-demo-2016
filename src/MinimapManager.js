@@ -1,6 +1,9 @@
 import d3 from 'd3';
 import htmlparser from 'htmlparser2';
 import EventDispatcher from './EventDispatcher';
+import {calculateHierarchyDepth} from './HierarchyHelper';
+import log from 'loglevel';
+
 
 export default class MinimapManager {
 	
@@ -19,6 +22,7 @@ export default class MinimapManager {
 		this.visGroup = this.svg.append("g");
 
 		EventDispatcher.addEventListener('editor_change', (event) => {
+			log.debug('Visualisation event: editor change');
 
 			this.parse(event.payload).then( (dom) => {
 				this.update(dom);
@@ -26,7 +30,9 @@ export default class MinimapManager {
 			});
 		});
 
+		//This event gets called when the cursor changes in the text editor
 		EventDispatcher.addEventListener('editor_cursor_change', (event) => {
+			log.debug('Visualisation event: editor cursor change');
 
 			//this method might be abit inefficient as it gets called multiple times
 			var selectedNode = this.selectedNode;
@@ -90,13 +96,14 @@ export default class MinimapManager {
 
 	update(dom) {
 
+		//this is probably very inefficent -> but for sake of demo ok
 		this.selectedNode = null;
 		this.visGroup.selectAll("*").remove();
 		
 		if(dom.length >= 1) {
 			var root = { type: 'root', name: 'html', children: dom };
 
-			var level = heightHeighy(root);
+			var level = calculateHierarchyDepth(root);
 			
 			if(level > 0) {
 			
@@ -136,26 +143,15 @@ export default class MinimapManager {
 			      		} else {
 			      			return 'yellow';
 			      		}
+			      	})
+			      	//.on("mouseover", function() { log.info('mouseover') })
+			      	//.on("mouseout", function() { log.info('mouseout') })
+			      	.on("click", function(d) { 
+			      		//d {endIndex: num, startIndex: num}
+			      		log.info(d) 
+			      		EventDispatcher.dispatchEvent( {type:'vis_click_event', payload: {start: d.startIndex, end: d.endIndex}} );
 			      	});
 	    	}
 		} 
 	}
-}
-
-// ----------------------------------------------------
-
-function heightHeighy(el) {
-    if (!el.children)
-        return 0;
-    var max = -1;
-    
-    for ( var i = 0; i < el.children.length; i++) {
-      if(el.children[i].type !== 'text') {
-        var h = heightHeighy(el.children[i]);
-        if (h > max) {
-            max = h;
-        }
-       }
-    }
-    return max + 1;
 }
