@@ -75,7 +75,10 @@ export default class EditorManager {
 			});
 			//ace editor start row count at 1 -> so we need to add 1
 			rowCount += 1;
-			log.info(`${rowCount} : ${columCount}`);
+
+			//currently the cursor position is at the beginning of tag -> so we need to move cursor 1 to right to be in tag
+			columCount += 1;
+			//log.info(`${rowCount} : ${columCount}`);
 			this.editor.gotoLine(rowCount, columCount);
 		});
 

@@ -41,7 +41,7 @@ export default class MinimapManager {
 				d3.select(selectedNode)
 					.transition()
 					.duration(250)
-					.style("fill","blue");
+					.style("fill","#484c0d");
 
 				this.selectedNode = null;
 				selectedNode = null;
@@ -68,7 +68,7 @@ export default class MinimapManager {
 				d3.select(selectedNode)
 					.transition()
 					.duration(250)
-					.style("fill","green");;
+					.style("fill","#d32661");;
 			}
 		});
 	}
@@ -137,21 +137,21 @@ export default class MinimapManager {
 			     	.attr("y", function(d) { return d.x; })
 			      	.attr("width", function(d) { return d.dy; })
 			      	.attr("height", function(d) { return d.dx; })
-			      	.style("fill", function(d) {
-			      		if(d.type === 'tag') {
-			      			return 'blue';
-			      		} else {
-			      			return 'yellow';
-			      		}
-			      	})
-			      	//.on("mouseover", function() { log.info('mouseover') })
-			      	//.on("mouseout", function() { log.info('mouseout') })
+			      	.style("fill", "484c0d")
 			      	.on("click", function(d) { 
-			      		//d {endIndex: num, startIndex: num}
-			      		log.info(d) 
 			      		EventDispatcher.dispatchEvent( {type:'vis_click_event', payload: {start: d.startIndex, end: d.endIndex}} );
 			      	});
 	    	}
 		} 
 	}
 }
+/*
+.on("mouseover", function() { log.info('mouseover') })
+.on("mouseout", function() { log.info('mouseout') })
+.style("fill", function(d) {
+		if(d.type === 'tag') {
+			return 'blue';
+		} else {
+			return 'yellow';
+		}
+	})*/

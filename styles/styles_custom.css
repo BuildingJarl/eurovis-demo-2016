@@ -4,6 +4,7 @@
 	bottom: 0px;
 	left: 0px;
 	right: 0px;
+	overflow: hidden;
 }
 
 #visContainer {
@@ -24,6 +25,7 @@
 }
 
 .node {
-  fill: #ddd;
+  fill: #d32661;
   stroke: #fff;
+  stroke-width: 1;
 }
