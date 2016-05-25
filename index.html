@@ -3,6 +3,7 @@
   <head>
     <title>P-001 Demo</title>
     <link rel="stylesheet" href="jspm_packages/npm/font-awesome@4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="jspm_packages/npm/purecss@0.6.0/build/pure-min.css">
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/styles_custom.css">
 
@@ -10,15 +11,34 @@
   </head>
 
   <body>
-    <div id="loadingFiller" class="splash">
-      <div class="message">Loading</div>
-      <i class="fa fa-spinner fa-spin"></i>
+    <div id="loadingFiller">
+      <div class="splash">
+        <div class="message">Loading</div>
+        <i class="fa fa-spinner fa-spin"></i>
+      </div>
     </div>
+
 
     <script src="jspm_packages/system.js"></script>
     <script src="config.js"></script>
     <script>
       System.import('main.js');
     </script>
+
+    <div id="container-main">
+    
+        <div id="container-buttons">
+          <button id="buttonTwo" class="pure-button">Reset</button>
+          <button id="buttonThree" class="pure-button">Help</button>
+          <button id="buttonOne" class="pure-button">Load HTML</button>
+        </div>
+
+        <div id="container-prototype">
+          <div id="container-vis"></div>
+          <div id="container-ace"></div>
+        </div>
+
+    </div>
+
   </body>
 </html>

@@ -25,6 +25,7 @@ export default class EditorManager {
 		this.editor.setTheme('ace/theme/monokai');
 		this.editor.getSession().setMode('ace/mode/' + mode);
 		this.editor.setOptions(options);
+		this.editor.$blockScrolling = Infinity;
 
 		EventDispatcher.addEventListener('editor_change_async_end', (event) => {
 			log.debug('Editor event: change async');
@@ -127,6 +128,11 @@ export default class EditorManager {
 
 		EventDispatcher.addEventListener('gutter_highlight_reset', (event) => {
 			this.gutter_highlight_reset();
+		});
+
+		EventDispatcher.addEventListener('editor_loadHTML', (event) => {
+			this.editor.setValue(event.payload);
+			this.editor.gotoLine(1, 0, true);
 		});
 		
 		this.editor.on('change', (change,target)=> {	

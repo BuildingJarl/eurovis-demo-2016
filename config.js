@@ -23,6 +23,8 @@ System.config({
     "font-awesome": "npm:font-awesome@4.5.0",
     "htmlparser2": "npm:htmlparser2@3.9.0",
     "loglevel": "npm:loglevel@1.4.0",
+    "purecss": "npm:purecss@0.6.0",
+    "text": "github:systemjs/plugin-text@0.0.8",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.4.0"
     },
@@ -113,6 +115,9 @@ System.config({
     },
     "npm:process@0.11.3": {
       "assert": "github:jspm/nodelibs-assert@0.1.0"
+    },
+    "npm:purecss@0.6.0": {
+      "css": "github:systemjs/plugin-css@0.1.21"
     },
     "npm:readable-stream@1.1.13": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
