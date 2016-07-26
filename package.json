@@ -46,6 +46,7 @@
       "font-awesome": "npm:font-awesome@^4.5.0",
       "htmlparser2": "npm:htmlparser2@^3.9.0",
       "loglevel": "npm:loglevel@^1.4.0",
+      "purecss": "npm:purecss@^0.6.0",
       "text": "github:systemjs/plugin-text@^0.0.8"
     },
     "devDependencies": {

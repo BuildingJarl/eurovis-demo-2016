@@ -3,6 +3,7 @@
   <head>
     <title>P-001 Demo</title>
     <link rel="stylesheet" href="jspm_packages/npm/font-awesome@4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="jspm_packages/npm/purecss@0.6.0/build/pure-min.css">
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/styles_custom.css">
 
@@ -26,16 +27,29 @@
 
     <div id="container-main">
     
-        <div id="container-buttons">
-          <button id="buttonTwo" class="pure-button">Reset</button>
-          <button id="buttonThree" class="pure-button">Help</button>
-          <button id="buttonOne" class="pure-button">Load HTML</button>
-        </div>
+      <div id="container-top">
+        
+        <div id="social-stuff">
+            <a href="https://github.com/BuildingJarl/eurovis-demo-2016">
+              <i class="fa fa-github fa-2x" aria-hidden="true"></i>
+            </a>
+            <a href="https://twitter.com/ivan_bacher">
+              <i class="fa fa-twitter fa-2x" aria-hidden="true"></i>
+            </a>
+          </div>
 
-        <div id="container-prototype">
-          <div id="container-vis"></div>
-          <div id="container-ace"></div>
-        </div>
+          <div id="button-stuff">
+            <button id="buttonOne" class="pure-button">Load JS code</button>
+            <button id="buttonTwo" class="pure-button">Reset</button>
+            <button id="buttonThree" class="pure-button">Help</button> 
+          </div>
+
+      </div>
+
+      <div id="container-prototype">
+        <div id="container-vis"></div>
+        <div id="container-ace"></div>
+      </div>
 
     </div>
 

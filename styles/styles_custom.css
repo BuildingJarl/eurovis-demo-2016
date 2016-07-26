@@ -17,7 +17,7 @@
 	display:none;
 }
 
-#container-buttons {
+#container-top {
 	position: absolute;
 	top: 0px;
 	height:40px;
@@ -31,9 +31,16 @@
 	background-color: #171714;
 }
 
-#container-buttons button {
+#container-top #button-stuff {
 	float: right;
 	margin-left: 10px;
+}
+
+#container-top #social-stuff a{
+	text-decoration: none;
+	float: left;
+	color: white;
+	margin-right: 10px;
 }
 
 #container-prototype {
