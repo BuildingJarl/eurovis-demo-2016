@@ -3,6 +3,7 @@ import htmlparser from 'htmlparser2';
 import EventDispatcher from './EventDispatcher';
 import {calculateHierarchyDepth} from './HierarchyHelper';
 import log from 'loglevel';
+import DomHandler from 'DomHandler';
 
 
 export default class MinimapManager {
@@ -84,10 +85,12 @@ export default class MinimapManager {
 
 	parse(payload) {
 		var promise = new Promise( function(resolve, reject) {
-			var handler = new htmlparser.DomHandler( function (error, dom) {
+
+			//var handler = new htmlparser.DomHandler( function (error, dom) {
+			var handler = new DomHandler( function (error, dom) {
 
 				if (error) {
-					console.log(error);
+					log.error(error);
 					reject(err);
 				}
 				else
@@ -154,13 +157,3 @@ export default class MinimapManager {
 		} 
 	}
 }
-/*
-.on("mouseover", function() { log.info('mouseover') })
-.on("mouseout", function() { log.info('mouseout') })
-.style("fill", function(d) {
-		if(d.type === 'tag') {
-			return 'blue';
-		} else {
-			return 'yellow';
-		}
-	})*/
