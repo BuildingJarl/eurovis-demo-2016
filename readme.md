@@ -1,4 +1,4 @@
-This is a demo application for VISSOFT 2016. The demo combines a source code editor with two tree visualisation techniques in order to facilitate source code understanding and navigation.
+This is a demo application for eurovis 2016. The demo combines a source code editor with a tree visualisation techniques in order to facilitate source code understanding and navigation.
 
 
 
